@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Customer - Grab N Go</title>
+    <style>
+    body { font-family: Arial, sans-serif; text-align: center; }
+    #products {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+        padding: 20px;
+        max-width: 1200px;
+        margin: auto;
+    }
+    .item { 
+        border: 1px solid #ccc; 
+        padding: 15px; 
+        border-radius: 8px; 
+        background: white;
+    }
+   .item img {
+    width: 100%;
+    height: 180px; /* same height for all */
+    object-fit: cover; /* crop instead of stretching */
+    border-radius: 5px;
+}
+
+    button { padding: 5px 10px; margin: 5px; }
+    .cart-summary { margin-top: 20px; font-size: 18px; }
+    .payment-btn { margin-top: 20px; padding: 10px 20px; font-size: 18px; background: #4CAF50; color: white; border: none; cursor: pointer; border-radius: 5px; }
+    .payment-btn:hover { background: #45a049; }
+</style>
+
+</head>
+<body>
+
+<h1>Choose Your Items</h1>
+<div id="products"></div>
+
+<div class="cart-summary">
+    Total: ₹<span id="total">0</span>
+</div>
+<button class="payment-btn" onclick="goToPayment()">Proceed to Payment</button>
+
+<script>
+let products = [
+       { name: "Chips", price: 20, image: "chips.jpg" },
+            { name: "Burger", price: 150, image: "burger.jpg" },
+            { name: "French Fries", price: 80, image: "fries.png" },
+            { name: "Shawarma", price: 120, image: "shawarma.jpg" },
+            { name: "Soda", price: 30, image: "soda.jpeg" },
+            { name: "Icecream", price: 60, image: "icecream.jpg" },
+            { name: "Chocolate", price: 50, image: "choco.jpg" },
+            { name: "Rose Milk", price: 60, image: "rosemilk.jpeg" },
+            { name: "Milk Shake", price: 100, image: "shake.jpeg" },
+            { name: "Pizza", price: 299, image: "pizza.jpeg" }
+];
+let cart = {};
+
+function renderProducts() {
+    let container = document.getElementById("products");
+    container.innerHTML = "";
+    products.forEach((p, index) => {
+        cart[index] = cart[index] || 0;
+        container.innerHTML += `
+            <div class="item">
+                <h3>${p.name}</h3>
+                <img src="${p.image}" alt="${p.name}">
+                <p>₹${p.price}</p>
+                <button onclick="updateQty(${index}, -1)">-</button>
+                ${cart[index]}
+                <button onclick="updateQty(${index}, 1)">+</button>
+            </div>
+        `;
+    });
+}
+
+function updateQty(i, change) {
+    cart[i] = Math.max(0, cart[i] + change);
+    updateTotal();
+    renderProducts();
+}
+
+function updateTotal() {
+    let total = 0;
+    for (let i in cart) {
+        total += cart[i] * products[i].price;
+    }
+    document.getElementById("total").textContent = total;
+}
+
+function goToPayment() {
+    let items = [];
+    let total = 0;
+
+    for (let i in cart) {
+        if (cart[i] > 0) {
+            items.push({
+                name: products[i].name,
+                price: products[i].price,
+                qty: cart[i]
+            });
+            total += cart[i] * products[i].price;
+        }
+    }
+
+    if (items.length === 0) {
+        alert("Please select at least one item.");
+        return;
+    }
+
+    localStorage.setItem("tempCart", JSON.stringify({ items: items, total: total }));
+    window.location.href = "payment.html";
+}
+
+renderProducts();
+</script>
+</body>
+</html>
